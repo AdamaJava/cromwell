@@ -329,7 +329,7 @@ class AwsBatchAsyncBackendJobExecutionActorSpec
     commandScript should include(s"> ${backend.stdoutRedirection.pathAsString}")
     commandScript should include(s"2> ${backend.stderrRedirection.pathAsString}")
     commandScript should not include "mkfifo"
-    commandScript should not include "tee "
+    commandScript.linesIterator.exists(_.trim.startsWith("tee ")) shouldBe false
   }
 
 //   { // Set of "handle call failures appropriately with respect to preemption and failure" tests
