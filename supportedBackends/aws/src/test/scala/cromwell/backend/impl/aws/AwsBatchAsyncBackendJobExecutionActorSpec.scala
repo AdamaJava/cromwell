@@ -321,6 +321,17 @@ class AwsBatchAsyncBackendJobExecutionActorSpec
 
   private val timeout = 25 seconds
 
+  it should "write stdout and stderr directly without mkfifo or tee" in {
+    val actorRef = buildTestActorRef(TestableAwsBatchExpressionFunctions)
+    val backend = actorRef.underlyingActor
+    val commandScript = backend.commandScriptContents.getOrElse(fail("Unable to generate command script"))
+
+    commandScript should include(s"> ${backend.stdoutRedirection.pathAsString}")
+    commandScript should include(s"2> ${backend.stderrRedirection.pathAsString}")
+    commandScript should not include "mkfifo"
+    commandScript should not include "tee "
+  }
+
 //   { // Set of "handle call failures appropriately with respect to preemption and failure" tests
 //     val expectations = Table(
 //       ("previous_preemptions", "previous_unexpectedRetries", "errorCode", "message", "shouldRetry"),
