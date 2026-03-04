@@ -11,6 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - id: get-jira-id
-        uses: ./.github/library/get_jira_id
-      - run: echo Jira ID is ${{ steps.get-jira-id.outputs.jira-id }}
+
