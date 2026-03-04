@@ -1,0 +1,27 @@
+name: 'sbt assembly'
+
+run-name: ${{ github.actor }} running sbt assembly.
+
+on:
+  workflow_dispatch:
+  push:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  build-assembly:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: sbt/setup-sbt@v1
+    - uses: ./.github/set_up_cromwell_action
+      with:
+        cromwell_repo_token: ${{ secrets.BROADBOT_GITHUB_TOKEN }}
+
+    - name: Run assembly
+      run: |
+        set -e
+        sbt "assembly"
