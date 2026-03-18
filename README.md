@@ -8,6 +8,21 @@ The [Cromwell documentation has a dedicated site](https://cromwell.readthedocs.i
 
 First time to Cromwell? Get started with [Tutorials](https://cromwell.readthedocs.io/en/stable/tutorials/FiveMinuteIntro/).
 
+### Build from source
+
+To build Cromwell from this fork:
+
+1. Install Java 17.
+2. Install sbt 1.8.2.
+3. Run:
+
+```bash
+sbt server/assembly
+```
+
+The assembled JAR is created under:
+`server/target/scala-2.13/cromwell-<version>.jar`
+
 ### Community
 
 Thinking about contributing to Cromwell? Get started by reading our [Contributor Guide](CONTRIBUTING.md).
