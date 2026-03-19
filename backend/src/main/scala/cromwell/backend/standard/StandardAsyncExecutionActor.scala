@@ -475,10 +475,6 @@ trait StandardAsyncExecutionActor
       s"""export $k="$v""""
     } mkString ("", "\n", "\n")
 
-    val shortId = jobDescriptor.workflowDescriptor.id.shortString
-    // Give the out and error FIFO variables names that are unlikely to conflict with anything the user is doing.
-    val (out, err) = (s"out$shortId", s"err$shortId")
-
     val dockerOutputDir = jobDescriptor.taskCall.callable.dockerOutputDirectory map { d =>
       s"ln -s $cwd $d"
     } getOrElse ""
@@ -511,9 +507,7 @@ trait StandardAsyncExecutionActor
       }
     }
 
-    // The `tee` trickery below is to be able to redirect to known filenames for CWL while also streaming
-    // stdout and stderr for PAPI to periodically upload to cloud storage.
-    // https://stackoverflow.com/questions/692000/how-do-i-write-stderr-to-a-file-while-using-tee-with-a-pipe
+    // Write stdout/stderr directly to known filenames.
     (errorOrDirectoryOutputs, errorOrGlobFiles, errorOrPreamble).mapN((directoryOutputs, globFiles, preamble) =>
       s"""|#!$jobShell
           |DOCKER_OUTPUT_DIR_LINK
@@ -525,17 +519,12 @@ trait StandardAsyncExecutionActor
           |
           |SCRIPT_PREAMBLE
           |
-          |$out="$${tmpDir}/out.$$$$" $err="$${tmpDir}/err.$$$$"
-          |mkfifo "$$$out" "$$$err"
-          |trap 'rm "$$$out" "$$$err"' EXIT
           |touch $stdoutRedirection $stderrRedirection
-          |tee $stdoutRedirection < "$$$out" &
-          |tee $stderrRedirection < "$$$err" >&2 &
           |(
           |cd ${cwd.pathAsString}
           |ENVIRONMENT_VARIABLES
           |INSTANTIATED_COMMAND
-          |) $stdinRedirection > "$$$out" 2> "$$$err"
+          |) $stdinRedirection > $stdoutRedirection 2> $stderrRedirection
           |echo $$? > $rcTmpPath
           |$emptyDirectoryFillCommand
           |(
